@@ -43,7 +43,7 @@ logger = getLogger(__name__)
 INITIALIZE_JS_RES_PATTERN = re.compile(r"(?s)^window\.Sonarr = ({.*});$")
 
 
-def get_initialize_js(host_url: str, api_key: Optional[str] = None, file_extension: str = "js") -> Dict[str, Any]:
+def get_initialize_page(host_url: str, api_key: Optional[str] = None, file_extension: str = "js") -> Dict[str, Any]:
     """
     Get the Sonarr session initialisation metadata, including the API key.
 
@@ -74,7 +74,7 @@ def get_initialize_js(host_url: str, api_key: Optional[str] = None, file_extensi
             error_message = "Unauthorized"
         elif res.status_code == HTTPStatus.NOT_FOUND and file_extension == "js":
             logger.debug("Initialize page not found, perhaps running Sonarr v4? Retrying...")
-            return get_initialize_js(host_url, api_key, "json")
+            return get_initialize_page(host_url, api_key, "json")
         else:
             status_code = res.status_code
             error_message = f"Unexpected response with error code {res.status_code}: {res.text}"

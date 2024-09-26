@@ -26,7 +26,7 @@ from buildarr.secrets import SecretsPlugin
 from buildarr.types import NonEmptyStr, Port
 from pydantic import validator
 
-from .api import api_get, get_initialize_js
+from .api import api_get, get_initialize_page
 from .exceptions import SonarrAPIError, SonarrSecretsUnauthorizedError
 from .types import SonarrApiKey, SonarrProtocol
 
@@ -107,7 +107,7 @@ class SonarrSecrets(_SonarrSecrets):
         )
         if not api_key:
             try:
-                initialize_js = get_initialize_js(host_url)
+                initialize_data = get_initialize_page(host_url)
             except SonarrAPIError as err:
                 if err.status_code == HTTPStatus.UNAUTHORIZED:
                     raise SonarrSecretsUnauthorizedError(
@@ -122,7 +122,7 @@ class SonarrSecrets(_SonarrSecrets):
                 else:
                     raise
             else:
-                api_key = initialize_js["apiKey"]
+                api_key = initialize_data["apiKey"]
         try:
             system_status = cast(
                 Dict[str, Any],
