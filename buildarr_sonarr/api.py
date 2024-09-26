@@ -43,19 +43,20 @@ logger = getLogger(__name__)
 INITIALIZE_JS_RES_PATTERN = re.compile(r"(?s)^window\.Sonarr = ({.*});$")
 
 
-def get_initialize_js(host_url: str, api_key: Optional[str] = None) -> Dict[str, Any]:
+def get_initialize_js(host_url: str, api_key: Optional[str] = None, file_extension: str = "js") -> Dict[str, Any]:
     """
     Get the Sonarr session initialisation metadata, including the API key.
 
     Args:
         host_url (str): Sonarr instance URL.
         api_key (str): Sonarr instance API key, if required. Defaults to `None`.
+        file_extension (str): File extension from the initialize page. Defaults to `js`.
 
     Returns:
         Session initialisation metadata
     """
 
-    url = f"{host_url}/initialize.js"
+    url = f"{host_url}/initialize.{file_extension}"
 
     logger.debug("GET %s", url)
 
@@ -71,6 +72,9 @@ def get_initialize_js(host_url: str, api_key: Optional[str] = None) -> Dict[str,
         if res.status_code in (HTTPStatus.UNAUTHORIZED, HTTPStatus.FOUND):
             status_code: int = HTTPStatus.UNAUTHORIZED
             error_message = "Unauthorized"
+        elif res.status_code == HTTPStatus.NOT_FOUND and file_extension == "js":
+            logger.debug("Initialize page not found, perhaps running Sonarr v4? Retrying...")
+            return get_initialize_js(host_url, api_key, "json")
         else:
             status_code = res.status_code
             error_message = f"Unexpected response with error code {res.status_code}: {res.text}"
@@ -78,6 +82,10 @@ def get_initialize_js(host_url: str, api_key: Optional[str] = None) -> Dict[str,
             f"Unable to retrieve '{url}': {error_message}",
             status_code=status_code,
         )
+        
+    logger.debug("GET %s -> status_code=%i res=%s", url, res.status_code, repr(res.text))
+    if file_extension == "json":
+        return res.json()
 
     res_match = re.match(INITIALIZE_JS_RES_PATTERN, res.text)
     if not res_match:
@@ -85,11 +93,7 @@ def get_initialize_js(host_url: str, api_key: Optional[str] = None) -> Dict[str,
             f"No matches for 'initialize.js' parsing: {res.text}",
             status_code=res.status_code,
         )
-    res_json = json5.loads(res_match.group(1))
-
-    logger.debug("GET %s -> status_code=%i res=%s", url, res.status_code, repr(res_json))
-
-    return res_json
+    return json5.loads(res_match.group(1))
 
 
 def api_get(
