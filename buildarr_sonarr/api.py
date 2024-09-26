@@ -42,7 +42,9 @@ logger = getLogger(__name__)
 INITIALIZE_JS_RES_PATTERN = re.compile(r"(?s)^window\.Sonarr = ({.*});$")
 
 
-def get_initialize_page(host_url: str, api_key: Optional[str] = None, file_extension: str = "js") -> Dict[str, Any]:
+def get_initialize_page(
+    host_url: str, api_key: Optional[str] = None, file_extension: str = "js"
+) -> Dict[str, Any]:
     """
     Get the Sonarr session initialisation metadata, including the API key.
 
@@ -81,7 +83,7 @@ def get_initialize_page(host_url: str, api_key: Optional[str] = None, file_exten
             f"Unable to retrieve '{url}': {error_message}",
             status_code=status_code,
         )
-        
+
     logger.debug("GET %s -> status_code=%i res=%s", url, res.status_code, repr(res.text))
     if file_extension == "json":
         return res.json()
