@@ -16,7 +16,6 @@
 Sonarr plugin general settings configuration.
 """
 
-
 from __future__ import annotations
 
 from ipaddress import IPv4Address
@@ -271,7 +270,7 @@ class SecurityGeneralSettings(GeneralSettings):
         """
         Enforce the following constraints on the validated attributes:
 
-        * If `authentication` is `none`, set the attribute value to `None`.
+        * If `authentication` is `none` or `external`, set the attribute value to `None`.
         * If `authentication` is a value other than `none` (i.e. require authentication),
           ensure that the attribute set to a value other than `None`.
 
@@ -288,7 +287,7 @@ class SecurityGeneralSettings(GeneralSettings):
         Returns:
             Validated attribute value
         """
-        if values["authentication"] == AuthenticationMethod.none:
+        if values["authentication"] in [AuthenticationMethod.none, AuthenticationMethod.external]:
             return None
         elif not value:
             raise ValueError("required when 'authentication' is not set to 'none'")
