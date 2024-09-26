@@ -40,6 +40,7 @@ class AuthenticationMethod(BaseEnum):
     none = "none"
     basic = "basic"
     form = "forms"
+    external = "external"
 
 
 class CertificateValidation(BaseEnum):
@@ -197,6 +198,7 @@ class SecurityGeneralSettings(GeneralSettings):
     Values:
 
     * `none` - No authentication
+    * `external` - No authentication (Sonarr v4 only)
     * `basic` - Authentication using HTTP basic auth (browser popup)
     * `form` - Authentication using a login page
 
